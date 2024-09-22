@@ -1,6 +1,7 @@
 <?php 
 use PHPUnit\Framework\TestCase;
 use FMLS\TPago\TPagoClient;
+use FMLS\TPago\TPagoConfig;
 use FMLS\TPago\Payment;
 use FMLS\TPago\Subscription;
 use FMLS\TPago\Exceptions\TPagoException;
@@ -16,7 +17,8 @@ class TpagoClientTest extends TestCase {
         $handlerStack = HandlerStack::create($mock);
         $customClient = new GuzzleClient(['handler' => $handlerStack]);
 
-        $client = new TPagoClient('publicKey', 'privateKey', 'commerceCode', 'branchCode', true, $customClient);
+        $config = new TPagoConfig('publicKey', 'privateKey', 'commerceCode', 'branchCode', true);
+        $client = new TPagoClient($config, $customClient);
         $payment= new Payment($client);
         $response = $payment->generateLink( 5000, "Test Payment");
         
@@ -41,7 +43,8 @@ class TpagoClientTest extends TestCase {
         $handlerStack = HandlerStack::create($mock);
         $customClient = new GuzzleClient(['handler' => $handlerStack]);
 
-        $client = new TPagoClient('publicKey', 'privateKey', 'commerceCode', 'branchCode', true, $customClient);
+        $config = new TPagoConfig('publicKey', 'privateKey', 'commerceCode', 'branchCode', true);
+        $client = new TPagoClient($config, $customClient);
         $payment = new Payment($client);        
 
         $this->expectException(TPagoException::class);
@@ -55,7 +58,8 @@ class TpagoClientTest extends TestCase {
         $handlerStack = HandlerStack::create($mock);
         $customClient = new GuzzleClient(['handler' => $handlerStack]);
 
-        $client = new TPagoClient('publicKey', 'privateKey', 'commerceCode', 'branchCode', true, $customClient);
+        $config = new TPagoConfig('publicKey', 'privateKey', 'commerceCode', 'branchCode', true);
+        $client = new TPagoClient($config, $customClient);
         $subscription = new Subscription($client);
         $response = $subscription->generateLink(['amount' => 5000, 'description' => 'Test Subscription', 'periodicity' => 'monthly', 'debit_day' => 1, 'unlimited' => false]);
         $this->assertEquals('success', $response['status']);
@@ -77,7 +81,8 @@ class TpagoClientTest extends TestCase {
         $handlerStack = HandlerStack::create($mock);
         $customClient = new GuzzleClient(['handler' => $handlerStack]);
 
-        $client = new TPagoClient('publicKey', 'privateKey', 'commerceCode', 'branchCode', true, $customClient);
+        $config = new TPagoConfig('publicKey', 'privateKey', 'commerceCode', 'branchCode', true);
+        $client = new TPagoClient($config, $customClient);
         $subscription = new Subscription($client);
 
         $this->expectException(TPagoException::class);

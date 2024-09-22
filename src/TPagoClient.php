@@ -1,40 +1,24 @@
 <?php 
 namespace FMLS\TPago;
 
-use GuzzleHttp\Client as GuzzleClient;
 use FMLS\TPago\Exceptions\TPagoException;
 use FMLS\TPago\Utils\Auth;
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestInterface;
+use FMLS\TPago\TPagoConfig;
+use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Psr7\Request;
-
+use Psr\Http\Client\ClientInterface;
 
 class TPagoClient {
     private ClientInterface $httpClient;
-    private string $publicKey;
-    private string $privateKey;
-    private string $commerceCode;
-    private string $branchCode;
-    private bool $isProduction = false;
-
-    private const URL_Staging = 'https://vpos.infonet.com.py:8888';
-    private const URL_PRODUCTION = 'https://vpos.infonet.com.py:8888';
+    private TPagoConfig $config;
 
     public function __construct(
-        string $publicKey, 
-        string $privateKey, 
-        string $commerceCode,
-        string $branchCode, 
-        bool $isProduction = true,
+        TPagoConfig $config,
         ClientInterface $httpClient = null
     ) {
-        $this->publicKey = $publicKey;
-        $this->privateKey = $privateKey;
-        $this->commerceCode = $commerceCode;
-        $this->branchCode = $branchCode;
-        $this->isProduction = $isProduction;
+        $this->config = $config;
         // Si no se provee un cliente, utiliza Guzzle por defecto
-        $this->httpClient = $httpClient ?? new GuzzleClient(['base_uri' => $this->getBaseURL()]);
+        $this->httpClient = $httpClient ?? new GuzzleClient(['base_uri' => $this->config->getBaseURL()]);
     }
 
 
@@ -100,9 +84,9 @@ class TPagoClient {
     }
 
     public function request(string $method, string $endpoint, array $data = []): array {
-        $authHeader = Auth::getBasicAuthHeader($this->publicKey, $this->privateKey);
+        $authHeader = Auth::getBasicAuthHeader($this->config->getPublicKey(), $this->config->getPrivateKey());
         
-        $url = $this->getBaseURL() . "/{$endpoint}";
+        $url = $this->config->getBaseURL() . "/{$endpoint}";
         $request = new Request(
             $method,
             $url,
@@ -121,10 +105,4 @@ class TPagoClient {
             throw new TPagoException($e->getMessage());
         }
     }
-
-    private function getBaseURL() {
-        $url_path = "/external-commerce/api/0.1/commerces/$this->commerceCode/branches/$this->branchCode";
-        return ($this->isProduction) ? self::URL_PRODUCTION . $url_path : self::URL_Staging . $url_path;
-    }
-
 }
