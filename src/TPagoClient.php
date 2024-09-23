@@ -44,7 +44,9 @@ class TPagoClient {
     }
 
     private function handleConfirmedPayment(array $payment): array {
-        if ($payment['response_code'] === '00') {
+        if ($payment['response_code'] === '00') {            
+            $alias = isset($payment['hook_alias']) ? $payment['hook_alias'] :$payment['link_alias'];
+            
             return [
                 'status' => 'success',
                 'messages' => [ 
@@ -52,7 +54,7 @@ class TPagoClient {
                     'level' => 'success',
                     'description' => sprintf(
                         "Pago confirmado exitosamente para el link: %s, monto: %s.",
-                    $payment['link_alias'],
+                        $alias,
                         $payment['amount']
                     )
                 ]
